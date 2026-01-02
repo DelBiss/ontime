@@ -2,6 +2,7 @@ import {
   isHTTPOutput,
   isOntimeAction,
   isOSCOutput,
+  isWSAutomationOutput,
   LogOrigin,
   TimerLifeCycle,
   type AutomationFilter,
@@ -16,6 +17,7 @@ import { isOntimeCloud } from '../../setup/environment.js';
 
 import { emitOSC } from './clients/osc.client.js';
 import { emitHTTP } from './clients/http.client.js';
+import { emitWSAutomation } from './clients/ws.client.js';
 import { getAutomationsEnabled, getAutomations, getAutomationTriggers } from './automation.dao.js';
 import { isBooleanEquals, isGreaterThan, isLessThan } from './automation.utils.js';
 import { toOntimeAction } from './clients/ontime.client.js';
@@ -133,6 +135,8 @@ function send(output: AutomationOutput[], state?: RuntimeState) {
   output.forEach((payload) => {
     if (isOSCOutput(payload) && !isOntimeCloud) {
       emitOSC(payload, stateSnapshot);
+    } else if (isWSAutomationOutput(payload)) {
+      emitWSAutomation(payload, stateSnapshot);
     } else if (isHTTPOutput(payload)) {
       emitHTTP(payload, stateSnapshot);
     } else if (isOntimeAction(payload)) {

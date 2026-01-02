@@ -5,6 +5,7 @@ import {
   HTTPOutput,
   OntimeAction,
   OSCOutput,
+  WSAutomationOutput,
   SecondarySource,
   timerLifecycleValues,
 } from 'ontime-types';
@@ -105,7 +106,7 @@ function validateOutput(output: Array<unknown>): output is AutomationOutput[] {
 }
 
 export const validateTestPayload = [
-  body('type').isIn(['osc', 'http', 'ontime']),
+  body('type').isIn(['osc', 'http', 'ontime', 'ws-automation']),
 
   // validation for OSC message
   oneOf([
@@ -116,7 +117,9 @@ export const validateTestPayload = [
   body('targetPort').if(body('type').equals('osc')).isPort(),
   body('address').if(body('type').equals('osc')).isString().trim(),
   body('args').if(body('type').equals('osc')).isString().trim(),
-
+  // validation for WS Automation message
+  body('name').if(body('type').equals('ws-automation')).isString().trim(),
+  body('args').if(body('type').equals('ws-automation')).isString().trim(),
   // validation for HTTP message
   body('url').if(body('type').equals('http')).isURL({ require_tld: false }).trim(),
 
@@ -149,6 +152,8 @@ export function parseOutput(maybeOutput: unknown): AutomationOutput {
 
   if (type === 'osc') {
     return parseOSCOutput(maybeOutput);
+  } else if (type === 'ws-automation') {
+    return parseWSAutomationOutput(maybeOutput);
   } else if (type === 'http') {
     return parseHTTPOutput(maybeOutput);
   } else if (type === 'ontime') {
@@ -174,6 +179,16 @@ function parseOSCOutput(maybeOSCOutput: object): OSCOutput {
   };
 }
 
+function parseWSAutomationOutput(maybeWSOutput: object): WSAutomationOutput {
+  assert.hasKeys(maybeWSOutput, ['name', 'args']);
+  assert.isString(maybeWSOutput.name);
+  assert.isString(maybeWSOutput.args);
+  return {
+    type: 'ws-automation',
+    name: maybeWSOutput.name,
+    args: maybeWSOutput.args,
+  };
+}
 function parseHTTPOutput(maybeHTTPOutput: object): HTTPOutput {
   assert.hasKeys(maybeHTTPOutput, ['url']);
   assert.isString(maybeHTTPOutput.url);

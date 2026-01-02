@@ -15,7 +15,7 @@ import {
   getAutomations,
 } from '../automation.dao.js';
 
-import { makeOSCAction, makeHTTPAction } from './testUtils.js';
+import { makeOSCAction, makeHTTPAction, makeWSAutomationAction } from './testUtils.js';
 
 beforeAll(() => {
   vi.mock('../../../classes/data-provider/DataProvider.js', () => {
@@ -132,7 +132,7 @@ describe('addAutomation()', () => {
       title: 'test',
       filterRule: 'all',
       filters: [],
-      outputs: [makeOSCAction(), makeHTTPAction()],
+      outputs: [makeOSCAction(), makeHTTPAction(), makeWSAutomationAction()],
     };
 
     const automation = await addAutomation(testData);

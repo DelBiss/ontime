@@ -1,4 +1,5 @@
 import type { Client } from '../../definitions/Clients.type.js';
+import type { WSAutomationOutput } from '../../definitions/core/Automation.type.js';
 import type { Log } from '../../definitions/runtime/Logger.type.js';
 import type { RuntimeStore } from '../../definitions/runtime/RuntimeStore.type.js';
 import type { MaybeNumber } from '../../utils/utils.type.js';
@@ -17,6 +18,7 @@ export enum MessageTag {
   Log = 'log',
   RuntimeData = 'runtime-data',
   Refetch = 'refetch',
+  Automation = 'automation',
 }
 
 // CLIENT TO SERVER
@@ -35,7 +37,7 @@ type ListClientPacket = {
   payload: Record<string, Client>;
 };
 type RuntimePacket = { tag: MessageTag.RuntimeData; payload: Partial<RuntimeStore> };
-
+type AutomationPacket = { tag: MessageTag.Automation; payload: Omit<WSAutomationOutput,'type'> };
 type RefetchPacket = {
   tag: MessageTag.Refetch;
   payload: {
@@ -57,4 +59,5 @@ export type WsPacketToClient =
   | LogPacket
   | ListClientPacket
   | RuntimePacket
-  | RefetchPacket;
+  | RefetchPacket
+  | AutomationPacket;

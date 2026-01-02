@@ -37,6 +37,7 @@ export type {
   NormalisedAutomation,
   OntimeAction,
   OSCOutput,
+  WSAutomationOutput,
   Trigger,
   TriggerDTO,
 } from './definitions/core/Automation.type.js';
@@ -121,6 +122,7 @@ export {
   isPlayableEvent,
   isKeyOfType,
   isOSCOutput,
+  isWSAutomationOutput,
   isHTTPOutput,
   isOntimeAction,
   isTimerLifeCycle,

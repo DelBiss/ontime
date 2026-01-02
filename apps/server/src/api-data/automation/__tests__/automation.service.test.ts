@@ -7,8 +7,9 @@ import { deleteAllTriggers, addTrigger, addAutomation } from '../automation.dao.
 import { testConditions, triggerAutomations } from '../automation.service.js';
 import * as oscClient from '../clients/osc.client.js';
 import * as httpClient from '../clients/http.client.js';
+import * as wsClient from '../clients/ws.client.js';
 
-import { makeOSCAction, makeHTTPAction } from './testUtils.js';
+import { makeOSCAction, makeHTTPAction, makeWSAutomationAction } from './testUtils.js';
 import { runTestCondition } from './filterTestUtils.js';
 
 beforeAll(() => {
@@ -39,10 +40,11 @@ afterAll(() => {
 describe('triggerAction()', () => {
   let oscSpy = vi.spyOn(oscClient, 'emitOSC');
   let httpSpy = vi.spyOn(httpClient, 'emitHTTP');
-
+  let wsSpy = vi.spyOn(wsClient, 'emitWSAutomation');
   beforeEach(async () => {
     oscSpy = vi.spyOn(oscClient, 'emitOSC').mockImplementation(() => {});
     httpSpy = vi.spyOn(httpClient, 'emitHTTP').mockImplementation(() => {});
+    wsSpy = vi.spyOn(wsClient, 'emitWSAutomation').mockImplementation(() => {});
 
     await deleteAllTriggers();
     const oscAutomation = await addAutomation({
@@ -57,6 +59,12 @@ describe('triggerAction()', () => {
       filters: [],
       outputs: [makeHTTPAction()],
     });
+    const wsAutomation = await addAutomation({
+      title: 'test-ws',
+      filterRule: 'any',
+      filters: [],
+      outputs: [makeWSAutomationAction()],
+    });
     await addTrigger({
       title: 'test-osc',
       trigger: TimerLifeCycle.onLoad,
@@ -67,6 +75,11 @@ describe('triggerAction()', () => {
       trigger: TimerLifeCycle.onFinish,
       automationId: httpAutomation.id,
     });
+    await addTrigger({
+      title: 'test-ws',
+      trigger: TimerLifeCycle.onDanger,
+      automationId: wsAutomation.id,
+    });
   });
 
   it('should trigger automations for a given action', () => {
@@ -74,24 +87,40 @@ describe('triggerAction()', () => {
     triggerAutomations(TimerLifeCycle.onLoad, state);
     expect(oscSpy).toHaveBeenCalledTimes(1);
     expect(httpSpy).not.toBeCalled();
+    expect(wsSpy).not.toBeCalled();
     oscSpy.mockReset();
     httpSpy.mockReset();
+    wsSpy.mockReset();
 
     triggerAutomations(TimerLifeCycle.onStart, state);
     expect(oscClient.emitOSC).not.toBeCalled();
     expect(httpSpy).not.toBeCalled();
+    expect(wsSpy).not.toBeCalled();
     oscSpy.mockReset();
     httpSpy.mockReset();
+    wsSpy.mockReset();
+
+    triggerAutomations(TimerLifeCycle.onDanger, state);
+    expect(oscSpy).not.toBeCalled();
+    expect(httpSpy).not.toBeCalled();
+    expect(wsSpy).toHaveBeenCalledTimes(1);
+    oscSpy.mockReset();
+    httpSpy.mockReset();
+    wsSpy.mockReset();
 
     triggerAutomations(TimerLifeCycle.onFinish, state);
     expect(oscSpy).not.toBeCalled();
     expect(httpSpy).toHaveBeenCalledTimes(1);
+    expect(wsSpy).not.toBeCalled();
     oscSpy.mockReset();
     httpSpy.mockReset();
+    wsSpy.mockReset();
 
     triggerAutomations(TimerLifeCycle.onStop, state);
     expect(oscSpy).not.toBeCalled();
     expect(httpSpy).not.toBeCalled();
+    expect(wsSpy).not.toBeCalled();
+    
   });
 });
 

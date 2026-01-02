@@ -39,13 +39,19 @@ export type AutomationFilter = {
   value: string; // we use string but would coerce to the field value
 };
 
-export type AutomationOutput = OSCOutput | HTTPOutput | OntimeAction;
+export type AutomationOutput = OSCOutput | HTTPOutput | OntimeAction | WSAutomationOutput;
 
 export type OSCOutput = {
   type: 'osc';
   targetIP: string;
   targetPort: number;
   address: string;
+  args: string;
+};
+
+export type WSAutomationOutput = {
+  type: 'ws-automation';
+  name: string;
   args: string;
 };
 

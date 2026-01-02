@@ -25,6 +25,26 @@ describe('parseOutput', () => {
       expect(() => parseOutput(payload)).toThrow();
     });
   });
+  describe('handles WS Automation outputs', () => {
+    it('parses a valid payload', () => {
+      const payload = {
+        type: 'ws-automation',
+        name: 'test',
+        args: 'message',
+      };
+      const result = parseOutput(payload);
+      expect(result).toStrictEqual(payload);
+    });
+
+    it('throws on a invalid payload', () => {
+      const payload = {
+        type: 'ws-automation',
+        name: 1234,
+        args: 'message',
+      };
+      expect(() => parseOutput(payload)).toThrow();
+    });
+  });
   describe('handles HTTP outputs', () => {
     it('parses a valid payload', () => {
       const payload = {

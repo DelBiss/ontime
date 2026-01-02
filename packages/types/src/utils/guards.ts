@@ -1,4 +1,4 @@
-import type { AutomationOutput, HTTPOutput, OntimeAction, OSCOutput } from '../definitions/core/Automation.type.js';
+import type { AutomationOutput, HTTPOutput, OntimeAction, OSCOutput, WSAutomationOutput } from '../definitions/core/Automation.type.js';
 import type {
   OntimeDelay,
   OntimeEntry,
@@ -40,6 +40,10 @@ export function isKeyOfType<T extends object>(key: PropertyKey, obj: T): key is 
 
 export function isOSCOutput(output: AutomationOutput): output is OSCOutput {
   return output.type === 'osc';
+}
+
+export function isWSAutomationOutput(output: AutomationOutput): output is WSAutomationOutput {
+  return output.type === 'ws-automation';
 }
 
 export function isHTTPOutput(output: AutomationOutput): output is HTTPOutput {
