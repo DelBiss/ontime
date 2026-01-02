@@ -8,8 +8,10 @@ import {
   isHTTPOutput,
   isOntimeAction,
   isOSCOutput,
+  isWSAutomationOutput,
   OntimeAction,
   OSCOutput,
+  WSAutomationOutput,
 } from 'ontime-types';
 
 import { addAutomation, editAutomation, testOutput } from '../../../../common/api/automation';
@@ -102,6 +104,10 @@ export default function AutomationForm({ automation, onClose }: AutomationFormPr
     appendOutput({ type: 'osc', targetIP: '', targetPort: undefined, address: '', args: '' });
   };
 
+  const handleAddNewWSAutomationOutput = () => {
+    appendOutput({ type: 'ws-automation', name: '', args: '' });
+  };
+
   const handleAddNewHTTPOutput = () => {
     appendOutput({ type: 'http', url: '' });
   };
@@ -121,6 +127,21 @@ export default function AutomationForm({ automation, onClose }: AutomationFormPr
         targetIP: values.targetIP,
         targetPort: values.targetPort,
         address: values.address,
+        args: values.args,
+      });
+    } catch (_error) {
+      /** we dont handle errors here, users should use the network tab */
+    }
+  };
+  const handleTestWSAutomationOutput = async (index: number) => {
+    try {
+      const values = getValues(`outputs.${index}`) as WSAutomationOutput;
+      if (!values.name) {
+        return;
+      }
+      await testOutput({
+        type: 'ws-automation',
+        name: values.name,
         args: values.args,
       });
     } catch (_error) {
@@ -365,6 +386,43 @@ export default function AutomationForm({ automation, onClose }: AutomationFormPr
               </div>
             );
           }
+          if (isWSAutomationOutput(output)) {
+            const rowErrors = errors.outputs?.[index] as
+              | {
+                  name?: { message?: string };
+                  args?: { message?: string };
+                }
+              | undefined;
+
+            return (
+              <div key={output.id} className={style.outputCard}>
+                <Tag>WS</Tag>
+                <div className={style.wsSection}>
+                  <label>
+                    Name
+                    <Input {...register(`outputs.${index}.name`)} fluid placeholder='Trigger Name' />
+                    <Panel.Error>{rowErrors?.name?.message}</Panel.Error>
+                  </label>
+                  <label>
+                    Arguments
+                    <TemplateInput {...register(`outputs.${index}.args`)} value={output.args} placeholder='1' />
+                    <Panel.Error>{rowErrors?.args?.message}</Panel.Error>
+                  </label>
+                  <div>
+                    <span>&nbsp;</span>
+                    <Panel.InlineElements relation='inner'>
+                      <Button variant='ghosted-white' onClick={() => handleTestWSAutomationOutput(index)}>
+                        Test
+                      </Button>
+                      <IconButton aria-label='Delete' variant='ghosted-destructive' onClick={() => removeOutput(index)}>
+                        <IoTrash />
+                      </IconButton>
+                    </Panel.InlineElements>
+                  </div>
+                </div>
+              </div>
+            );
+          }
           if (isHTTPOutput(output)) {
             const rowErrors = errors.outputs?.[index] as
               | {
@@ -447,6 +505,9 @@ export default function AutomationForm({ automation, onClose }: AutomationFormPr
         <Panel.InlineElements relation='inner'>
           <Button onClick={handleAddNewOSCOutput}>
             OSC <IoAdd />
+          </Button>
+          <Button onClick={handleAddNewWSAutomationOutput}>
+            WS Automation <IoAdd />
           </Button>
           <Button onClick={handleAddNewHTTPOutput}>
             HTTP <IoAdd />
